@@ -1,42 +1,40 @@
-import json
+import boto3
+from email.header import Header
 
-# import requests
+SENDER_ADDRESS = 'no-reply@example.com'
+SENDER_NAME = '私だ'
+
+ses = boto3.client('ses', region_name='eu-west-1')
 
 
 def lambda_handler(event, context):
-    """Sample pure Lambda function
+    to_address = 'hoge@example.com'
+    subject = 'テストメール'
+    body = 'これはテストメールです。'
+    send(to_address, subject, body)
 
-    Parameters
-    ----------
-    event: dict, required
-        API Gateway Lambda Proxy Input Format
 
-        Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
+def send(to_address, subject: str, body: str):
+    display_name = '{0}<{1}>'.format(
+        Header(SENDER_NAME, 'utf-8').encode(),
+        SENDER_ADDRESS
+    )
 
-    context: object, required
-        Lambda Context runtime methods and attributes
-
-        Context doc: https://docs.aws.amazon.com/lambda/latest/dg/python-context-object.html
-
-    Returns
-    ------
-    API Gateway Lambda Proxy Output Format: dict
-
-        Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
-    """
-
-    # try:
-    #     ip = requests.get("http://checkip.amazonaws.com/")
-    # except requests.RequestException as e:
-    #     # Send some context about this error to Lambda Logs
-    #     print(e)
-
-    #     raise e
-
-    return {
-        "statusCode": 200,
-        "body": json.dumps({
-            "message": "hello world",
-            # "location": ip.text.replace("\n", "")
-        }),
-    }
+    ses.send_email(
+        Source=display_name,
+        Destination={
+            'ToAddresses': [to_address],
+            'CcAddresses': [],
+            'BccAddresses': []
+        },
+        Message={
+            'Subject': {
+                'Data': subject
+            },
+            'Body': {
+                'Text': {
+                    'Data': body
+                }
+            }
+        }
+    )

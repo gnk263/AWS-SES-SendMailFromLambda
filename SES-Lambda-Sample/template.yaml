@@ -9,6 +9,8 @@ Resources:
       CodeUri: hello_world/
       Handler: app.lambda_handler
       Runtime: python3.7
+      Policies:
+        - arn:aws:iam::aws:policy/AmazonSESFullAccess
 
   HelloWorldFunctionLogGroup:
     Type: AWS::Logs::LogGroup
